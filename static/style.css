@@ -58,7 +58,7 @@ section h2 {
 }
 
 section p {
-    color: #252525; /* Dunkelgrau */
+    color: var(--text); /* Dunkelgrau */
 }
 
 section a {
@@ -152,6 +152,7 @@ footer a:hover {
   [data-theme="dark"] .glass-effect {
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
+
   
   /* Cards */
   .card {
