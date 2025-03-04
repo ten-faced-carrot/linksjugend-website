@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linksjugend ['Solid] Dresden</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg"></div>
+
+    <!-- Floating Navigation -->
+    <header class="glass-effect">
+        <div class="nav-container">
+            <a href="/"><img class="logo" src="https://cdn.prod.website-files.com/6759bc93cdd395aa9d112cc8/67631ad248cbe2cae0b96c15_favicon.png" alt="Linksjugend Dresden"> <!-- TODO nicht einfach das Logo der Bundes-LJ Rippen--></a>
+            
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a onclick="scrollTo('ueber-uns')" href="/#ueber-uns" class="nav-link hover-underline">Über uns</a></li>
+                    <li><a onclick="scrollTo('aktivitaten')" href="/#aktivitaeten" class="nav-link hover-underline">Aktionen</a></li>
+                    <li><a href="/mitmachen" class="nav-link hover-underline">Mitmachen</a></li>
+                    <li><a href="/kontakt" class="nav-link cta-button">Kontakt</a></li>
+                </ul>
+            </nav>
+            
+            <button class="theme-toggle cta-button">🌓</button>
+            <div class="hamburger">☰</div>
+        </div>
+    </header>
+    {% include "banner.html" %}
+
+    <!-- Main Content Sections -->
+    <main class="container">
+        <section id="ueber-uns" class="glass-effect fade-in">
+            <h1>Linksjugend Torrent-Tracker</h1>
+            <p>Du kannst üver <a href="/lj-backend/lj-torrentd">unseren Torrent-Service</a> große Dateien gratis torrenten.</p>
+            <hr>
+            <h2>Die URL des Trackers ist <span id="tracker-ip"></span></h2>
+            <hr>
+            <p>Falls du den Torrent-Tracker nutzen willst, verwende den o.g. Link. Eine Liste aller Torrents (und Magnet-Links) sind auf <a href="/lj-backend/lj-torrentd/tracker">der Trackerliste</a> zu finden.</p>
+            <p>Zur Information: Der Dienst besitzt die Dateien nicht und teilt sie auch nicht - Der Tracker untersucht die Legitimität der Torrents nicht.</p>
+            <p>Bitte halte dich deswegen an die unten gelisteten Regelungen</p>
+        </section>
+        <section class="glass-effect fade-in">
+            <h2>Regeln für unseren Tracker</h2>
+            <ul class="styled-list">
+                <li><strong>1. Private Nutzung:</strong> Dieser Tracker ist nur für Mitglieder unserer Basisgruppe.</li>
+                <li><strong>2. Keine kommerziellen Inhalte:</strong> Keine urheberrechtlich geschützten Werke ohne Erlaubnis hochladen oder teilen.</li>
+                <li><strong>3. Fair Use:</strong> Teile aktiv mit und halte ein faires Seed/Leech-Verhältnis von mindestens 1:1.</li>
+                <li><strong>4. Keine Malware:</strong> Es ist strikt verboten, Viren, Spyware oder andere schädliche Software zu verbreiten.</li>
+                <li><strong>5. Keine Überwachung:</strong> Keine Weitergabe von Tracker-Informationen oder Logs an Außenstehende.</li>
+                <li><strong>6. Respektvolles Verhalten:</strong> Kein Spam, keine Beleidigungen oder Belästigungen innerhalb der Community.</li>
+                <li><strong>7. Keine Weitergabe des Accounts:</strong> Jeder Account ist persönlich und darf nicht weitergegeben werden.</li>
+                <li><strong>8. Technische Sicherheit:</strong> Nutzt VPN oder Tor, wenn nötig, um eure Privatsphäre zu schützen.</li>
+                <li><strong>9. Verstöße:</strong> Bei Regelverstößen behalten wir uns vor, Zugriff auf den Tracker zu sperren.</li>
+                <li><strong>10. Gemeinschaft stärken:</strong> Helft einander, haltet euch an die Regeln und sorgt für eine solidarische Atmosphäre.</li>
+            </ul>
+        </section>
+
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab cta-button">✊</button>
+
+    <script>
+
+        window.onload = () => {
+            document.getElementById("tracker-ip").innerText = `http://${location.hostname}:6969/announce`
+        }
+    </script>
+
+    <script src="/static/functs.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{% for message in get_flashed_messages() %}
+    <div id="news-banner" class="news-banner glass-effect">
+        <div class="banner-content">
+            <span class="banner-message">{{ message }}</span>
+            <button id="close-banner" class="banner-close">×</button>
+        </div>
+    </div>
+
+{% endfor %}

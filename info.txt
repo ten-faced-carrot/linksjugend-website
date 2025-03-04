@@ -1,0 +1,4 @@
+Ränge:
+10: Sysop
+5: Social Media
+3: Torrent-Rang

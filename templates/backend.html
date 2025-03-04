@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anmeldung | Linksjugend ['Solid] Dresden</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg"></div>
+
+    <!-- Floating Navigation -->
+    <header class="glass-effect">
+        <div class="nav-container">
+            <a href="/"><img class="logo" src="https://cdn.prod.website-files.com/6759bc93cdd395aa9d112cc8/67631ad248cbe2cae0b96c15_favicon.png" alt="Linksjugend Dresden"> <!-- TODO nicht einfach das Logo der Bundes-LJ Rippen--></a>
+
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="/#ueber-uns" class="nav-link hover-underline">Über uns</a></li>
+                    <li><a href="/#aktivitaeten" class="nav-link hover-underline">Aktionen</a></li>
+                    <li><a href="/mitmachen" class="nav-link hover-underline">Mitmachen</a></li>
+                    <li><a href="/kontakt" class="nav-link cta-button">Kontakt</a></li>
+                </ul>
+            </nav>
+            
+            <button class="theme-toggle">🌓</button>
+            <div class="hamburger">☰</div>
+        </div>
+    </header>
+    {% include "banner.html" %}
+
+    <main class="container">
+        <section id="aktionen" class="glass-effect fade-in">
+            <h2>Aktionserstellung</h2>
+            <p class="highlight">Wir lieben Aktionen, Demos, Veranstaltungen, Kundgebung und alles! Füge hier Kundgebungen hinzu, die mit der Öffentlichkeit geteilt werden sollen.</p>
+
+            <!-- Formular für neue Aktionen -->
+            <form id="activity-form" action="/lj-backend/postdata/aktion" enctype="multipart/form-data" method="post" class="activity-form">
+                <div class="form-group">
+                    <label for="activity-title">Titel der Aktion:</label>
+                    <input type="text" id="activity-title" name="activity-title" required placeholder="Titel eingeben">
+                </div>
+
+                <div class="form-group">
+                    <label for="activity-date">Datum:</label>
+                    <input type="datetime-local" id="activity-date" name="activity-date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="activity-description">Beschreibung:</label>
+                    <textarea id="activity-description" name="activity-description" required placeholder="Beschreibung eingeben"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="activity-image">Bild hochladen:</label>
+                    <input type="file" id="activity-image" name="activity-image" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="modern-button">Aktion speichern →</button>
+                </div>
+            </form>
+
+            <!-- Liste der vorhandenen Aktionen -->
+            <div class="activity-list">
+                <h3>Vorhandene Aktionen</h3>
+                <table id="activity-items">
+                    {%for activity in aktionen %}
+
+                    <tr>
+                        <td>{{activity.name}}</td> 
+                        <td>{{activity.date}} </td>
+                        <td><form action="/lj-backend/updata/delete/aktion/{{activity._id}}" method="post" class="activity-form"><button class="modern-button" type="submit">Löschen</button></form></td>
+                     </tr>
+                    {% endfor %}
+                </table>
+                <td><form action="/lj-backend/updata" method="post" class="activity-form"><button class="modern-button" type="submit">Datensätze aktualisieren</button></form></td>
+
+            </div>
+        </section>
+        <section id="aktionen" class="glass-effect fade-in">
+            <h2>Blogeinträge schreiben</h2>
+            <p class="highlight">Für Statements, Aufrufe, Pressemitteilungen und alles andere</p>
+
+            <!-- Formular für neue Aktionen -->
+            <form id="pm-form" action="/lj-backend/postdata/beintrag" enctype="multipart/form-data" method="post" class="activity-form">
+                <div class="form-group">
+                    <label for="pm-title">Titel:</label>
+                    <input type="text" id="pm-title" name="pm-title" required placeholder="Titel eingeben">
+                </div>
+
+                <div class="form-group">
+                    <label for="pm-body">Inhalt:</label>
+                    <textarea id="pm-body" name="pm-body" required placeholder="Beschreibung eingeben"></textarea>
+                </div>
+
+
+                <div class="form-group">
+                    <button type="submit" class="modern-button">Veröffentlichen →</button>
+                </div>
+            </form>
+            
+
+        </section>
+
+        <section class="glass-effect fade-in">
+            <h2>Interne Tools</h2>
+            <a href="/lj-backend/lj-tools/ljtt" class="modern-button">Torrent-Tracker</a>
+        </section>
+        <hr>
+        <h1>Entwickler*innenwerkzeuge</h1>
+        <hr>
+        <section id="aktionen" class="glass-effect fade-in">
+            <h2>Wartungsmodus ein/aus</h2>
+            <p class="highlight">Beschränkt den Zugriff auf die Website, falls irgendwas nicht funktioniert</p>
+
+            <!-- Formular für neue Aktionen -->
+            <form id="pm-form" action="lj-backend/devtools/toggle-maintenance" method="post" class="activity-form">
+                <div class="form-group">
+                    <label for="mt-mode">Wartungsmodus ein/ausschalten</label>
+                    <input type="checkbox" id="mt-mode" name="mt-mode" >
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="modern-button">Veröffentlichen →</button>
+                </div>
+            </form>
+            
+
+        </section>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab">✊</button>
+
+    <script src="/static/functs.js"></script>
+</body>
+</html>
