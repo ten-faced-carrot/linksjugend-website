@@ -4,6 +4,7 @@ from bcrypt import gensalt, hashpw
 from getpass import getpass
 import pprint
 from datetime import datetime
+from sqlalchemy import text
 
 app.app_context().push()
 
@@ -25,7 +26,9 @@ class Main(Cmd):
             elif args[0] == "info":
                 print(db.session.info)
             elif args[0] == "exec":
-                print(db.session.execute(input("sqlite:\\> ")))
+                res = (db.session.execute(text(input("sqlite:\\> "))).fetchall())
+                for r in res:
+                    print(" ".join(list(r)))
             elif args[0] == "inspect":
                 if len(args) > 1:
                     tables: list = args[1:]

@@ -37,3 +37,5 @@ document.getElementById('close-banner').addEventListener('click', () => {
 setTimeout(() => {
   document.getElementById('news-banner').style.display = 'none';
 }, 10000); // Schließt das Banner nach 10 Sekunden
+
+

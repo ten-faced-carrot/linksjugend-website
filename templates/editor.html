@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pad | Linksjugend ['Solid] Dresden</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script type="module">
+        import { Editor } from 'https://esm.sh/@tiptap/core'
+        import StarterKit from 'https://esm.sh/@tiptap/starter-kit'
+        import Image from 'https://esm.sh/@tiptap/extension-image'
+        import Table from 'https://esm.sh/@tiptap/extension-table'
+        import TableRow from 'https://esm.sh/@tiptap/extension-table-row'
+        import TableCell from 'https://esm.sh/@tiptap/extension-table-cell'
+        import TableHeader from 'https://esm.sh/@tiptap/extension-table-header'
+
+        const socket = io();
+        let username = "";
+
+        window.joinEditor = function () {
+            username = document.getElementById("username").value.trim();
+            if (!username) return alert("Bitte gib einen Namen ein!");
+          
+            document.getElementById("login").style.display = "none";
+            document.getElementById("editor-container").style.display = "block";
+          
+            socket.emit("join", { name: username, id: "{{id}}" });
+          }
+          
+    
+        socket.on("user_list", (users) => {
+            const userList = document.getElementById("user-list");
+            userList.innerHTML = users.map(user => `<li>${user}</li>`).join("");
+        });
+    
+        const editor = new Editor({
+            element: document.querySelector("#editor"),
+            extensions: [
+                StarterKit,
+                Image,
+                Table.configure({ resizable: true }),
+                TableRow,
+                TableCell,
+                TableHeader
+            ],
+            content: "<p>Starte hier mit dem Schreiben...</p>",
+            onUpdate: ({ editor }) => {
+                socket.emit("update", { content: editor.getHTML() , id: "{{id}}"});
+            }
+        });
+    
+        socket.on("update", (data) => {
+            if (editor.getHTML() !== data.content) {
+                editor.commands.setContent(data.content);
+            }
+        });
+    
+        document.querySelector("#bold").addEventListener("click", () => editor.chain().focus().toggleBold().run());
+        document.querySelector("#italic").addEventListener("click", () => editor.chain().focus().toggleItalic().run());
+        document.querySelector("#h1").addEventListener("click", () => editor.chain().focus().toggleHeading({ level: 1 }).run());
+        document.querySelector("#h2").addEventListener("click", () => editor.chain().focus().toggleHeading({ level: 2 }).run());
+        document.querySelector("#table").addEventListener("click", () => editor.chain().focus().insertTable({ rows: 3, cols: 3 }).run());
+        document.querySelector("#table_ac").addEventListener("click", () => editor.chain().focus().addColumnAfter().run());
+        document.querySelector("#table_dc").addEventListener("click", () => editor.chain().focus().deleteColumn().run());
+        document.querySelector("#image").addEventListener("click", () => {
+            const url = prompt("Bild-URL eingeben:");
+            if (url) editor.chain().focus().setImage({ src: url }).run();
+        });
+
+        document.querySelector("#download-pdf").addEventListener("click", () => {
+            const content = document.querySelector("#editor");
+            html2pdf().from(content).save("Dokument.pdf");
+        });
+
+        document.querySelector("#save-on-device").addEventListener("click", () => {
+            socket.emit("save", { content: editor.getHTML() , id: "{{id}}", name: document.querySelector("#filename").value || "{{id}}.ldo"});
+        });
+        
+
+    </script>
+    <script>
+
+    </script>
+    
+    
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg"></div>
+
+    <!-- Floating Navigation -->
+    <header class="glass-effect">
+        <div class="nav-container">
+            <a href="/"><img class="logo" src="https://cdn.prod.website-files.com/6759bc93cdd395aa9d112cc8/67631ad248cbe2cae0b96c15_favicon.png" alt="Linksjugend Dresden"> <!-- TODO nicht einfach das Logo der Bundes-LJ Rippen--></a>
+            
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a onclick="scrollTo('ueber-uns')" href="/#ueber-uns" class="nav-link hover-underline">Über uns</a></li>
+                    <li><a onclick="scrollTo('aktivitaten')" href="/#aktivitaeten" class="nav-link hover-underline">Aktionen</a></li>
+                    <li><a href="/mitmachen" class="nav-link hover-underline">Mitmachen</a></li>
+                    <li><a href="/kontakt" class="nav-link cta-button">Kontakt</a></li>
+                </ul>
+            </nav>
+            
+            <button class="theme-toggle cta-button">🌓</button>
+            <div class="hamburger">☰</div>
+        </div>
+    </header>
+    {% include "banner.html" %}
+<div id="login" class="glass-effect fade-in form-group">
+        <h2>Bitte Namen eingeben:</h2>
+        <input class="" type="text" id="username" placeholder="Dein Name">
+        <button class="modern-button" onclick="window.joinEditor()">Beitreten</button>
+    </div>
+    
+    <div id="editor-container" class="glass-effect fade-in" style="display:none;">
+        <h2>Online:</h2>
+        <ul id="user-list" class="styled-list"></ul>
+        <hr>
+        <div class="form-group">
+        <input type="text" placeholder="Dateiname" id="filename" value="{{id}}">
+        <button class="modern-button" id="download-pdf">📄 PDF herunterladen</button>
+        <button class="modern-button" id="save-on-device">💾 Auf Server speichern</button>
+    </div>
+        <hr>
+        <div>
+            <button class="modern-button" id="bold"><b>B</b></button>
+            <button class="modern-button" id="italic"><i>I</i></button>
+            <button class="modern-button" id="h1">H1</button>
+            <button class="modern-button" id="h2">H2</button>
+            <button class="modern-button" id="image"><i class="fa fa-image"></i></button>
+            <button class="modern-button" id="table"><i class="fa fa-table"></i></button>
+            <button class="modern-button" id="table_ac"><i class="fa fa-table">+</i></button>
+            <button class="modern-button" id="table_dc"><i class="fa fa-table">-</i></button>
+        </div>
+        <hr>
+        <div id="editor" style="border: 1px solid #ddd; padding: 10px; min-height: 200px;"></div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+</body>
+</html>

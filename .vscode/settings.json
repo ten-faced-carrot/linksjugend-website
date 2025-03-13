@@ -1,0 +1,11 @@
+{
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "database": "${workspaceFolder:Linksjugend_DD_website}/instance/data.sqlite3",
+            "name": "LJ_DD_DB"
+        }
+    ]
+}

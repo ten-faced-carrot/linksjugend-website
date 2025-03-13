@@ -8,15 +8,18 @@ from PIL import Image
 from datetime import datetime
 import os
 from flask_socketio import SocketIO, emit, send
+from flask_cors import CORS
+from models import *
 
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = "test" # ''.join([secrets.choice(string.printable) for _ in range(30)])
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
+db.init_app(app)
 login_manager = LoginManager(app)
-socketio = SocketIO(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 
 @login_manager.user_loader
 def user_loader(id):
@@ -56,42 +59,6 @@ def check_maintenance():
 """
 
 
-class User(db.Model, UserMixin):
-    __tablename__ = 'user'
-    id = db.Column(db.Integer, primary_key = True, autoincrement = True)
-    name = db.Column(db.VARCHAR(120))
-    email = db.Column(db.VARCHAR(254))
-    pronouns = db.Column(db.VARCHAR(120))
-    password = db.Column(db.VARCHAR(540))
-    rank = db.Column(db.Integer)
-    posts = db.relationship('Blogeintrag', backref='author', lazy = True)
-
-
-
-class Aktion(db.Model):
-    _id = db.Column("id", db.Integer, primary_key = True, autoincrement = True)
-    name = db.Column(db.VARCHAR(120))
-    date = db.Column(db.DATETIME)
-    body = db.Column(db.VARCHAR(10240))
-
-
-class Torrent(db.Model):
-    _id         = db.Column("id", db.Integer, primary_key = True, autoincrement = True)
-    name        = db.Column(db.VARCHAR(120))
-    t_id        = db.Column(db.VARCHAR(120))
-    info_hash   = db.Column(db.VARCHAR(120))
-    seeders     = db.Column(db.Integer)
-    peers       = db.Column(db.Integer)
-
-    
-
-class Blogeintrag(db.Model):
-    __tablename__ = 'blogeintrag'
-    _id = db.Column("id", db.Integer, primary_key = True, autoincrement = True)
-    name = db.Column(db.VARCHAR(120))
-    date = db.Column(db.DATETIME)
-    body = db.Column(db.VARCHAR(10240))
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 # --- Error Handling ---
 
@@ -157,6 +124,12 @@ def blogseite(id):
 @login_required
 def backend():
     return render_template("backend.html", aktionen = Aktion.query.all())
+
+
+@app.route("/lj-tools/lj-magnets")
+def magnets():
+    return render_template("ljmagnets.html", current_user=current_user)
+
 
 @app.route("/lj-backend/updata", methods=["POST"])
 @login_required
@@ -229,21 +202,68 @@ def neue_pm():
     return redirect("/lj-backend")
 
 
-@app.route("/lj-backend/lj-tools/ljtt")
-@login_required
-def tracker():
-    return render_template("torrent_tracker.html")
+documents = {}
+users = {}  # Speichert Nutzer (socket_id -> Name)
 
-@app.route("/lj-backend/lj-torrentd")
-@login_required
-def new_torrent():
-    return render_template("newtorrent.html")
+@socketio.on("join")
+def handle_join(data):
+    users[request.sid] = {
+        "name": data["name"],
+        "color": ""
+    }
+    emit("user_list", users, broadcast=True)
+
+@socketio.on("join")
+def handle_join(data):
+    users[request.sid] = data["name"]
+    data["content"] = documents[data["id"]]["content"]
+    emit("user_list", list(users.values()), broadcast=True)
+    emit("update", data, broadcast=True)
 
 
-kt = {}
+@socketio.on("save")
+def handle_save(data):
+    pd = Pad.query.filter_by(info_hash=data["id"]).first()
+    print("insert", pd)
+    if not pd:
+        pd = Pad(info_hash=data["id"])
+        db.session.add(pd)
+    pd.name = data["name"]
+    pd.content = data["content"]
+    pd.date = datetime.now()
+    db.session.commit()
+    
+    emit("update", data, broadcast=True)
 
-ROOT = "localhost"
-RP = 5000
+
+@socketio.on("disconnect")
+def handle_disconnect():
+    users.pop(request.sid, None)
+    emit("user_list", list(users.values()), broadcast=True)
+
+@socketio.on("update")
+def handle_update(data):
+    global document
+    documents[data["id"]]["content"] = data["content"]
+    emit("update", data, broadcast=True)
+
+@app.route("/lj-tools/lj-pad/<id>")
+def pad_index(id):
+
+    if id not in documents:
+        print(id)
+        documents[id] = {"content": ""}
+        filter = Pad.query.filter_by(info_hash=id).first()
+        print(filter)
+        if filter:
+            documents[id] = {"content": filter.content}
+    return render_template("editor.html", id=id)
+
+@app.route("/lj-tools/lj-pad")
+def pad():
+    import random
+    from string import ascii_letters, digits
+    return redirect("/lj-tools/lj-pad/" + ''.join(random.choices(ascii_letters+digits, k=20)))
 
 
 @app.route("/mitmachen")
@@ -257,6 +277,15 @@ Hier könnten sich Neumitglieder*innen registrieren - Aber das ist noch nicht im
 Solltest du nicht nach wenigen sekunden weitergeleitet werden kommst du <a href="/login">hier</a> zur anmeldung
 """
 
+# Tracker
+@app.route("/lj-tracker/register-link")
+@login_required
+def register_lnk():
+    link = request.args.get("link")
+    print(link)
+    query = Magnet.query.filter_by(link=link).first()
+    if query: return redirect("/lj-tracker")
+    return render_template("ttrck.html")
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
+    socketio.run(app, "0.0.0.0", debug=True)

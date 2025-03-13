@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magnet-Link-Ersteller | Linksjugend ['Solid] Dresden</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg"></div>
+
+    <!-- Floating Navigation -->
+    <header class="glass-effect">
+        <div class="nav-container">
+            <a href="/"><img class="logo" src="https://cdn.prod.website-files.com/6759bc93cdd395aa9d112cc8/67631ad248cbe2cae0b96c15_favicon.png" alt="Linksjugend Dresden"> <!-- TODO nicht einfach das Logo der Bundes-LJ Rippen--></a>
+
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="/#ueber-uns" class="nav-link hover-underline">Über uns</a></li>
+                    <li><a href="/#aktivitaeten" class="nav-link hover-underline">A</a></li>
+                    <li><a href="/mitmachen" class="nav-link hover-underline">Mitmachen</a></li>
+                    <li><a href="/kontakt" class="nav-link cta-button">Kontakt</a></li>
+                </ul>
+            </nav>
+            
+            <button class="theme-toggle">🌓</button>
+            <div class="hamburger">☰</div>
+        </div>
+    </header>
+    {% include "banner.html" %}
+
+    <!-- Anmeldungsformular -->
+    <main class="container">
+        <section id="anmeldung" class="glass-effect fade-in">
+            <h2>LJ-Magnets</h2>
+            <p class="highlight"></p>
+            
+            <div class="signup-form">
+                <div class="form-group">
+                    <label for="hash">Info-Hash*</label>
+                    <input type="text" onkeydown="reb()" onchange="reb()" id="hash" maxlength="40" name="hash" required>
+                    <sub>Einzigartiger Hash des Torrents, lerne <a href="https://stackoverflow.com/a/28601408/5257518">hier</a> mehr</sub>
+                </div>
+
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" onkeydown="reb()" onchange="reb()" id="name" name="name" >
+                </div>
+                <div class="form-group">
+                    <label for="name">Größe (in Bytes)</label>
+                    <input onkeydown="reb()" id="num" onchange="reb()" name="num" >
+                </div>
+                <div class="form-group">
+                    <label for="trackers">Tracker</label>
+                    <textarea onkeydown="reb()" id="trackers" onchange="reb()" name="trackers" > </textarea>
+                </div>
+                
+                <div class="container fit glass-effect fade-in">
+                    <button class="modern-button" onclick="copyText()">Link kopieren</button>
+                    <div id="magnet" class="card"></div>
+                </div>
+
+                <script>
+                    function isValidTorrentHash(hash) {
+                        // Ein Torrent-Hash ist genau 40 Zeichen lang und besteht aus Hexadezimalzeichen (0-9, a-f, A-F)
+                        const torrentHashRegex = /^[a-fA-F0-9]{40}$/;
+                        return torrentHashRegex.test(hash);
+                    }
+                    function copyText(){
+                        navigator.clipboard.writeText(makeLink())
+                        alert("Magnet-Link kopiert!")
+                    }
+
+                    function makeLink(){
+                        let hash = document.getElementById("hash").value
+                        let dn = ""
+                        let xl = ""
+                        let trackers = []
+                        // `<code>magnet:?xt=urn:btih:
+                        if(!!document.getElementById("name").value){
+                            dn = "&dn=" + document.getElementById("name").value
+                        }
+                        if(!!document.getElementById("num").value){
+                            xl = "xl=" + document.getElementById("num").value+"&"
+                        }
+                        console.log(document.getElementById("trackers").value)
+
+                        if(!!document.getElementById("trackers").value){
+                            for(let tracker of document.getElementById("trackers").value.split("\n")){
+                                trackers.push(tracker.trim())
+                            }
+                        }
+                        console.log(trackers)
+                        let magLink = "magnet:?" + (xl ? xl : "") + "xt=urn:btih:" + hash + dn 
+                        for(let tracker of trackers){
+                            magLink = magLink + "&tr=" + tracker
+                        }
+                        return magLink
+                    }
+                    function reb(){
+                        if(!isValidTorrentHash(document.getElementById("hash").value)){
+                            return document.getElementById("magnet").innerHTML = '<p class="highlight">Bitte gib einen gültigen Magnet-Hash ein!</p>'
+                        } 
+                        let magLink = makeLink()
+                        
+                        console.log(magLink)
+                        document.getElementById("magnet").innerHTML = `<p class="highlight">${magLink}</p>` {% if current_user.is_authenticated %} + `<a href="/lj-tracker/register-link?link=${magLink}"><button class="modern-button">Im Tracker anmelden</button></a>` {%endif%}
+
+                    }
+                    window.onload = reb
+                </script>
+                
+
+            </form>
+        </section>
+    </main>
+
+    <!-- Floating Action Button -->
+    <button class="fab">✊</button>
+
+    <script src="/static/functs.js"></script>
+</body>
+</html>
