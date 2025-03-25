@@ -9,6 +9,7 @@ from datetime import datetime
 import os
 from flask_socketio import SocketIO, emit, send
 from flask_cors import CORS
+from flask_july import Flask_July
 from models import *
 
 app = Flask(__name__)
@@ -19,6 +20,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 login_manager = LoginManager(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
+jul = Flask_July(app)
+
+@jul.validate
+def validate_fn():
+    if request.path == "/announce": return False                    # BitTorrent Tracker
+    if request.path.startswith("/lj-backend"): return False         # Backend (Die Leute die ins Backend dürfen sind sicher keine Bots :>)
+    if request.path.startswith("/socket.io"): return False
+    return True
 
 
 @login_manager.user_loader
@@ -123,7 +132,8 @@ def blogseite(id):
 @app.route("/lj-backend")
 @login_required
 def backend():
-    return render_template("backend.html", aktionen = Aktion.query.all())
+    pads = Pad.query.all()
+    return render_template("backend.html", aktionen = Aktion.query.all(), pads=pads)
 
 
 @app.route("/lj-tools/lj-magnets")
