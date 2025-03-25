@@ -105,8 +105,32 @@
         </section>
 
         <section class="glass-effect fade-in">
-            <h2>Interne Tools</h2>
-            <a href="/lj-tools/lj-pad" class="modern-button">Pad</a>
+            <h2>Pad</h2>
+            <a href="/lj-tools/lj-pad" class="modern-button">Neues Pad</a>
+            <br>
+            <hr>
+            <h3>Offene Pads:</h3>
+            <table class="table" border> 
+                <thead>  
+                    <td>ID</td>
+                    <td>Name</td>
+                    <td>Letzte Änderung</td>
+                    <td>Vorschau</td>
+                    <td>Pad öffnen</td>
+                </thead>
+                <tbody>  
+                    
+                {% for pad in pads %}
+                    <tr>
+                        <td>{{pad.info_hash}}</td>
+                        <td>{{pad.name}}</td>
+                        <td>{{pad.date}}</td>
+                        <td>{{pad.content[:20]}}...</td>
+                        <td><a href="/lj-tools/lj-pad/{{pad.info_hash}}" target="_blank">Zum Pad</a></td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </section>
         <hr>
         <h1>Entwickler*innenwerkzeuge</h1>
