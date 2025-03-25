@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anmeldung | Linksjugend ['Solid] Dresden</title>
+    <title>Backend | Linksjugend ['Solid] Dresden</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -117,6 +117,7 @@
                     <td>Letzte Änderung</td>
                     <td>Vorschau</td>
                     <td>Pad öffnen</td>
+                    <td>Pad löschen</td>
                 </thead>
                 <tbody>  
                     
@@ -127,6 +128,7 @@
                         <td>{{pad.date}}</td>
                         <td>{{pad.content[:20]}}...</td>
                         <td><a href="/lj-tools/lj-pad/{{pad.info_hash}}" target="_blank">Zum Pad</a></td>
+                        <td><form action="/lj-backend/updata/delete/pad/{{pad.info_hash}}" method="post"><input type="submit" value="Pad löschen"></form></td>
                     </tr>
                 {% endfor %}
                 </tbody>

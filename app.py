@@ -163,6 +163,17 @@ def aktion_loeschen(id):
     db.session.commit()
     return redirect("/lj-backend")
 
+
+@app.route("/lj-backend/updata/delete/pad/<id>", methods=["POST"])
+@login_required
+def pad_loeschen(id):
+    if current_user.rank < 5: abort(403)
+    aktion = Pad.query.filter_by(info_hash = id).first()
+    db.session.delete(aktion)
+    db.session.commit()
+    return redirect("/lj-backend")
+
+
 @app.route("/lj-backend/postdata/aktion", methods=["POST"])
 @login_required
 def neue_aktion():
