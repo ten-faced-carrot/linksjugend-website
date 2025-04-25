@@ -4,3 +4,6 @@ __pycache__
 *.db
 **/*.jpg
 **/*.torrent*
+.mypy_cache
+.ropeproject
+temp
