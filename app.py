@@ -5,22 +5,25 @@ from flask_login import UserMixin, login_user, LoginManager, logout_user, curren
 from flask_sqlalchemy import SQLAlchemy
 from bcrypt import gensalt, hashpw, checkpw
 from PIL import Image
-from datetime import datetime
+
+from datetime import datetime, date
 import os
 from flask_socketio import SocketIO, emit, send
 from flask_cors import CORS
 from flask_july import Flask_July
 from models import *
+from flask_sitemapper import Sitemapper
 
 app = Flask(__name__)
+sitemapper = Sitemapper(app)
 CORS(app)
-app.config['SECRET_KEY'] = "test" # ''.join([secrets.choice(string.printable) for _ in range(30)])
+app.config['SECRET_KEY'] = ''.join([secrets.choice(string.printable) for _ in range(30)])
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 login_manager = LoginManager(app)
 socketio = SocketIO(app, cors_allowed_origins="*")
-jul = Flask_July(app)
+jul = Flask_July(app, enable_robots=True, robotsfile="robots.txt", create_route = True)
 
 @jul.validate
 def validate_fn():
@@ -81,16 +84,18 @@ def notfound(msg):
 
 @app.errorhandler(503)
 def error_503(error):
-    return render_template("maintenance.html") 
+    return render_template("maintenance.html")
 
 # --- Routing ---
 
+@sitemapper.include(lastmod=date.today().isoformat())
 @app.route("/")
 def root():
     aktionen = Aktion.query.all()
     blogeintraege = Blogeintrag.query.all()
     return render_template("index.html", aktionen=aktionen, blogs=blogeintraege)
 
+@sitemapper.include(lastmod=date.today().isoformat())
 @app.route("/login")
 def login():
     if current_user.is_authenticated: return redirect("/lj-backend")
@@ -115,6 +120,7 @@ def register():
     if current_user.is_authenticated: return redirect("/lj-backend")
     return render_template("register.html")
 
+@sitemapper.include(lastmod=date.today().isoformat())
 @app.route("/kontakt")
 def ktk():
     return render_template("kontakt.html")
@@ -147,7 +153,7 @@ def cache_clear():
     if current_user.rank < 5: abort(403)
     aktionen = Aktion.query.all()
     for ak in aktionen:
-        if datetime.now() > ak.date: 
+        if datetime.now() > ak.date:
             os.remove(f'static/aktionen/{ak._id}.jpg')
             db.session.delete(ak)
     db.session.commit()
@@ -187,7 +193,7 @@ def neue_aktion():
         file = request.files['activity-image']
         if file.filename:
             file.save(f'temp/'+secure_filename(file.filename))
-            
+
             img = Image.open(f'temp/'+secure_filename(file.filename))
             img.save(f'static/aktionen/{aktion._id}.jpg')
             img.close()
@@ -215,7 +221,7 @@ def neue_pm():
         file = request.files['activity-image']
         if file.filename:
             file.save(f'temp/'+secure_filename(file.filename))
-            
+
             img = Image.open(f'temp/'+secure_filename(file.filename))
             img.save(f'static/aktionen/{aktion._id}.jpg')
             img.close()
@@ -253,7 +259,7 @@ def handle_save(data):
     pd.content = data["content"]
     pd.date = datetime.now()
     db.session.commit()
-    
+
     emit("update", data, broadcast=True)
 
 
@@ -280,6 +286,7 @@ def pad_index(id):
             documents[id] = {"content": filter.content}
     return render_template("editor.html", id=id)
 
+@sitemapper.include(lastmod=date.today().isoformat())
 @app.route("/lj-tools/lj-pad")
 def pad():
     import random
@@ -287,6 +294,7 @@ def pad():
     return redirect("/lj-tools/lj-pad/" + ''.join(random.choices(ascii_letters+digits, k=20)))
 
 
+@sitemapper.include(lastmod=date.today().isoformat())
 @app.route("/mitmachen")
 def mm():
     if current_user.is_authenticated:
@@ -307,6 +315,10 @@ def register_lnk():
     query = Magnet.query.filter_by(link=link).first()
     if query: return redirect("/lj-tracker")
     return render_template("ttrck.html")
+
+@app.route("/sitemap.xml")
+def sitemap():
+    return sitemapper.generate()
 
 if __name__ == "__main__":
     socketio.run(app, "0.0.0.0", debug=True)
